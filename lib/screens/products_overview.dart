@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shoppingapp/providers/cart.dart';
+import 'package:shoppingapp/widgets/badge.dart';
 
 import 'package:shoppingapp/widgets/products_grid.dart';
 
@@ -37,7 +40,19 @@ class _ProductsOverviewState extends State<ProductsOverview> {
               PopupMenuItem(child: Text('Only Favourites'), value: FilterOptions.Favourites),
               PopupMenuItem(child: Text('Show All'), value: FilterOptions.All),
             ]
-          )
+          ),
+          Consumer<Cart>(
+            builder: (_, cart, child) => Badge(
+              child: child,
+              value: cart.itemsCount.toString(),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.shopping_cart,
+              ),
+              onPressed: () {},
+            ),
+          ),
         ],
       ),
       body: ProductsGrid(_showOnlyFavourites),
