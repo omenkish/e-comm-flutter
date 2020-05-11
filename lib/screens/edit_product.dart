@@ -18,13 +18,13 @@ class _EditProductState extends State<EditProduct> {
   final _form = GlobalKey<FormState>();
   var _editedProduct = Product(id: null, title: '', description: '', imageUrl: '');
   var _isInit = true;
-
   Map _initialValues = {
     'title': '',
     'description': '',
     'price': '',
     'imageUrl': '',
   };
+  bool _isLoading = false;
 
 
   @override
@@ -74,13 +74,40 @@ class _EditProductState extends State<EditProduct> {
     if (!formIsValid) {
       return;
     }
+
     _form.currentState.save();
+
+    setState(() {
+      _isLoading = true;
+    });
     if (_editedProduct.id != null) {
       Provider.of<Products>(context, listen: false).updateProduct(_editedProduct.id,_editedProduct);
     } else {
-      Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+      Provider.of<Products>(context, listen: false).addProduct(_editedProduct).then((_) {
+        setState(() {
+          _isLoading = true;
+        });
+        Navigator.pop(context);
+      }).catchError((error) {
+        setState(() {
+          _isLoading = false;
+        });
+        return showDialog<Null>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('An error occured'),
+            content: Text('Something went wrong'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Okay'),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ));
+      });
     }
-    Navigator.pop(context);
   }
 
   void dispose() {
@@ -101,11 +128,13 @@ class _EditProductState extends State<EditProduct> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.save),
-            onPressed: _saveForm,
+            onPressed: _isLoading ? null : _saveForm,
           )
         ],
       ),
-      body: Padding(
+      body: _isLoading ? Center(
+        child: CircularProgressIndicator(),
+      ) : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _form,
