@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shoppingapp/providers/products.dart';
+import 'package:shoppingapp/screens/edit_product.dart';
 import 'package:shoppingapp/widgets/app_drawer.dart';
 import 'package:shoppingapp/widgets/user_product_item.dart';
 
@@ -18,7 +19,7 @@ class UserProducts extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-
+              Navigator.pushNamed(context, EditProduct.routeName);
             },
           ),
         ],
@@ -31,6 +32,7 @@ class UserProducts extends StatelessWidget {
         itemBuilder: (_, idx) => Column(
           children: <Widget>[
             UserProductItem(
+              id: productsData.items[idx].id,
               title: productsData.items[idx].title,
               imageUrl: productsData.items[idx].imageUrl,
             ),
