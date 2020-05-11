@@ -8,6 +8,7 @@ import 'package:shoppingapp/screens/cart.dart';
 import 'package:shoppingapp/screens/orders.dart' as screen;
 import 'package:shoppingapp/screens/product_details.dart';
 import 'package:shoppingapp/screens/products_overview.dart';
+import 'package:shoppingapp/screens/user_products.dart';
 
 void main() => runApp(MyApp());
 
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
           ProductDetails.routeName: (ctx) => ProductDetails(),
           CartScreen.routeName: (ctx) => CartScreen(),
           screen.Orders.routeName: (ctx) => screen.Orders(),
+          UserProducts.routeName: (ctx) => UserProducts(),
         },
       ),
     );
