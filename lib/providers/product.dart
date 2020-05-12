@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:shoppingapp/models/http_exception.dart';
 
 class Product with ChangeNotifier{
   final String id;
@@ -17,8 +21,22 @@ class Product with ChangeNotifier{
     this.isFavourite = false,
   });
 
-  void toggleFavouriteStatus() {
+  Future<void> toggleFavouriteStatus() async {
+    var oldStatus = isFavourite;
     isFavourite = !isFavourite;
     notifyListeners();
+    print(isFavourite);
+    final url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/products/$id.jso';
+    final response = await http.patch(url, body: json.encode({
+      'isFavourite': isFavourite,
+    }));
+
+    if (response.statusCode >= 400) {
+      isFavourite = oldStatus;
+      notifyListeners();
+      throw HttpException('Unable to favourite at this time.');
+    }
+
+    oldStatus = null;
   }
 }
