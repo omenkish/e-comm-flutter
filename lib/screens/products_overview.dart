@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shoppingapp/providers/cart.dart';
+import 'package:shoppingapp/providers/products.dart';
 import 'package:shoppingapp/screens/cart.dart';
 import 'package:shoppingapp/widgets/app_drawer.dart';
 import 'package:shoppingapp/widgets/badge.dart';
@@ -20,6 +21,28 @@ class ProductsOverview extends StatefulWidget {
 
 class _ProductsOverviewState extends State<ProductsOverview> {
   bool _showOnlyFavourites = false;
+  bool _isLoading = false;
+  bool _loadingError = false;
+
+  void fetchProducts () {
+    _isLoading = true;
+    Provider.of<Products>(context, listen: false).fetchAndSetProducts().then((_) {
+      setState(() {
+        _isLoading = false;
+      });
+    }).catchError((err) {
+      setState(() {
+        _loadingError = true;
+        _isLoading = false;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    fetchProducts();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +83,25 @@ class _ProductsOverviewState extends State<ProductsOverview> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductsGrid(_showOnlyFavourites),
+      body: _isLoading ? Center(
+        child: CircularProgressIndicator(),
+      ) : ( _loadingError ? Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Something went wrong, please try again later!'),
+            SizedBox(height: 12.0),
+            FlatButton.icon(
+              icon: Icon(Icons.refresh),
+              label: Text('Click to refresh!'),
+              onPressed: () {
+                fetchProducts();
+              },
+            ),
+          ],
+        ),
+      ) : ProductsGrid(_showOnlyFavourites)),
     );
   }
 }

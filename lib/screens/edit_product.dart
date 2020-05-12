@@ -68,7 +68,7 @@ class _EditProductState extends State<EditProduct> {
     }
   }
 
-  void _saveForm() {
+  void _saveForm() async {
     bool formIsValid = _form.currentState.validate();
 
     if (!formIsValid) {
@@ -80,19 +80,17 @@ class _EditProductState extends State<EditProduct> {
     setState(() {
       _isLoading = true;
     });
-    if (_editedProduct.id != null) {
-      Provider.of<Products>(context, listen: false).updateProduct(_editedProduct.id,_editedProduct);
-    } else {
-      Provider.of<Products>(context, listen: false).addProduct(_editedProduct).then((_) {
-        setState(() {
-          _isLoading = true;
-        });
+    try {
+      if (_editedProduct.id != null) {
+        await Provider.of<Products>(context, listen: false).updateProduct(_editedProduct.id,_editedProduct);
         Navigator.pop(context);
-      }).catchError((error) {
-        setState(() {
-          _isLoading = false;
-        });
-        return showDialog<Null>(
+      } else {
+        await Provider.of<Products>(context, listen: false).addProduct(
+            _editedProduct);
+        Navigator.pop(context);
+      }
+    } catch (error) {
+      showDialog<Null>(
           context: context,
           builder: (ctx) => AlertDialog(
             title: Text('An error occured'),
@@ -106,6 +104,9 @@ class _EditProductState extends State<EditProduct> {
               ),
             ],
           ));
+      } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }
@@ -123,7 +124,7 @@ class _EditProductState extends State<EditProduct> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Product'),
+        title: Text((_editedProduct.id != null) ? 'Edit Product' : 'Add Product'),
         centerTitle: true,
         actions: <Widget>[
           IconButton(
