@@ -62,6 +62,8 @@ class Products with ChangeNotifier {
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> loadedProducts = [];
 
+      if (extractedData == null) return;
+
       extractedData.forEach((key, value) {
         loadedProducts.add(
           Product(
@@ -79,6 +81,7 @@ class Products with ChangeNotifier {
       throw error;
     }
   }
+
   Future<void> addProduct(Product product) async {
     const url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/products.json';
     try {
