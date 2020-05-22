@@ -31,6 +31,7 @@ class _ProductsOverviewState extends State<ProductsOverview> {
         _isLoading = false;
       });
     }).catchError((err) {
+      print(err);
       setState(() {
         _loadingError = true;
         _isLoading = false;

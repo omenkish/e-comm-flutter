@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -8,14 +7,19 @@ import 'package:shoppingapp/models/cart_item.dart';
 
 class Orders with ChangeNotifier {
   List<OrderItem> _orders = [];
+  String _authToken;
 
   List<OrderItem> get orders {
     return [..._orders];
   }
 
+  void setToken(String token) {
+    this._authToken = token;
+  }
+
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
 
-    final url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/orders.json';
+    final url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/orders.json?auth=$_authToken';
     final time = DateTime.now();
     final response = await http.post(url, body: json.encode({
       'amount': total,
@@ -38,7 +42,7 @@ class Orders with ChangeNotifier {
   }
 
   Future<void> fetchAndSetOrders() async {
-    const url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/orders.json';
+    final url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/orders.json?auth=$_authToken';
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
