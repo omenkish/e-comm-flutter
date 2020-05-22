@@ -8,6 +8,7 @@ import 'package:shoppingapp/models/cart_item.dart';
 class Orders with ChangeNotifier {
   List<OrderItem> _orders = [];
   String _authToken;
+  String _userId;
 
   List<OrderItem> get orders {
     return [..._orders];
@@ -17,9 +18,13 @@ class Orders with ChangeNotifier {
     this._authToken = token;
   }
 
+  void setUserId(String userId) {
+    this._userId = userId;
+  }
+
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
 
-    final url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/orders.json?auth=$_authToken';
+    final url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/orders/$_userId.json?auth=$_authToken';
     final time = DateTime.now();
     final response = await http.post(url, body: json.encode({
       'amount': total,
@@ -42,7 +47,7 @@ class Orders with ChangeNotifier {
   }
 
   Future<void> fetchAndSetOrders() async {
-    final url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/orders.json?auth=$_authToken';
+    final url = 'https://flutter-shopping-app-a9ef1.firebaseio.com/orders/$_userId.json?auth=$_authToken';
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
