@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:shoppingapp/models/http_exception.dart';
 
 class Auth  with ChangeNotifier {
@@ -9,6 +11,7 @@ class Auth  with ChangeNotifier {
   DateTime _expiryDate;
   String _userId;
   Timer _authTimer;
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   static const API_KEY = 'AIzaSyDcV_YGw60aQC7JiS0FeGPRmHX0Hy_c7n4';
 
@@ -45,6 +48,13 @@ class Auth  with ChangeNotifier {
       _expiryDate = DateTime.now().add(Duration(seconds: int.parse(responseData['expiresIn'])));
       _autoLogout();
       notifyListeners();
+      final SharedPreferences preferences = await _prefs;
+      final userData = json.encode({
+        'token': _token,
+        'userId': _userId,
+        'exoiryDate': _expiryDate.toIso8601String()
+      });
+      preferences.setString('userData', userData);
     } catch (err) {
       throw err;
     }
@@ -58,7 +68,24 @@ class Auth  with ChangeNotifier {
     return _authenticate(email, password, 'signInWithPassword');
   }
 
-  void logout() {
+  Future<bool> tryAutoLogin() async {
+    final SharedPreferences preferences = await _prefs;
+    if (!preferences.containsKey('userData')) return false;
+    
+    final userData = json.decode(preferences.getString('userData')) as Map<String, Object>;
+    final expiryDate = DateTime.parse(userData['expiryDate']);
+
+    if (expiryDate.isBefore(DateTime.now())) return false;
+
+    _token = userData['token'];
+    _userId = userData['userId'];
+    _expiryDate = userData['expiryDate'];
+    notifyListeners();
+    _autoLogout();
+    return true;
+  }
+  
+  Future<void> logout() async {
     _expiryDate = null;
     _token = null;
     _userId = null;
@@ -67,6 +94,10 @@ class Auth  with ChangeNotifier {
       _authTimer = null;
     }
     notifyListeners();
+
+    final SharedPreferences preferences = await _prefs;
+    preferences.remove('userData');
+//  preferences.clear();
   }
 
   void _autoLogout() {
